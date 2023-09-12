@@ -12,10 +12,10 @@ import (
 
 	"github.com/equinix-labs/otel-init-go/otelinit"
 	"github.com/go-logr/stdr"
+	"github.com/raunovv/dhcp"
 	"github.com/raunovv/dhcp/backend/kube"
 	"github.com/raunovv/dhcp/handler"
 	"github.com/raunovv/dhcp/handler/reservation"
-	"github.com/tinkerbell/dhcp"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 )
@@ -23,11 +23,11 @@ import (
 func main() {
 	ctx, done := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGHUP, syscall.SIGTERM)
 	defer done()
-	ctx, otelShutdown := otelinit.InitOpenTelemetry(ctx, "github.com/tinkerbell/dhcp")
+	ctx, otelShutdown := otelinit.InitOpenTelemetry(ctx, "github.com/raunovv/dhcp/")
 	defer otelShutdown(ctx)
 
 	l := stdr.New(log.New(os.Stdout, "", log.Lshortfile))
-	l = l.WithName("github.com/tinkerbell/dhcp")
+	l = l.WithName("github.com/raunovv/dhcp/")
 	// 1. create the backend
 	// 2. create the handler(backend)
 	// 3. create the listener(handler)

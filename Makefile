@@ -29,7 +29,7 @@ else
 	@$(MAKE) build-darwin
 endif
 
-# BEGIN: lint-install github.com/tinkerbell/dhcp
+# BEGIN: lint-install github.com/raunovv/dhcp/
 # http://github.com/tinkerbell/lint-install
 
 .PHONY: lint
@@ -73,4 +73,4 @@ _lint: $(LINTERS)
 .PHONY: fix $(FIXERS)
 fix: $(FIXERS)
 
-# END: lint-install github.com/tinkerbell/dhcp
+# END: lint-install github.com/raunovv/dhcp/

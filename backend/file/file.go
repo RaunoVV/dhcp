@@ -20,7 +20,7 @@ import (
 	"go.opentelemetry.io/otel/codes"
 )
 
-const tracerName = "github.com/tinkerbell/dhcp"
+const tracerName = "github.com/raunovv/dhcp/"
 
 // Errors used by the file watcher.
 var (

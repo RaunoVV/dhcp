@@ -20,7 +20,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/cluster"
 )
 
-const tracerName = "github.com/tinkerbell/dhcp"
+const tracerName = "github.com/raunovv/dhcp/"
 
 // Backend is a backend implementation that uses the Tinkerbell CRDs to get DHCP data.
 type Backend struct {

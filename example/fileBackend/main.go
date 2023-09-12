@@ -22,11 +22,11 @@ import (
 func main() {
 	ctx, done := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGHUP, syscall.SIGTERM)
 	defer done()
-	ctx, otelShutdown := otelinit.InitOpenTelemetry(ctx, "github.com/tinkerbell/dhcp")
+	ctx, otelShutdown := otelinit.InitOpenTelemetry(ctx, "github.com/raunovv/dhcp/")
 	defer otelShutdown(ctx)
 
 	l := stdr.New(log.New(os.Stdout, "", log.Lshortfile))
-	l = l.WithName("github.com/tinkerbell/dhcp")
+	l = l.WithName("github.com/raunovv/dhcp/")
 	// 1. create the backend
 	// 2. create the handler(backend)
 	// 3. create the listener(handler)
