@@ -34,6 +34,9 @@ type Handler struct {
 
 	// SyslogAddr is the address to send syslog messages to. DHCP Option 7.
 	SyslogAddr netip.Addr
+
+	//Automatically register all dhcp discoveries as pending hardware
+	AutoRegister bool
 }
 
 // Netboot holds the netboot configuration details used in running a DHCP server.

@@ -1,4 +1,4 @@
-module github.com/tinkerbell/dhcp
+module github.com/raunovv/dhcp
 
 go 1.20
 

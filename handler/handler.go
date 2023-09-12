@@ -16,4 +16,5 @@ type BackendReader interface {
 	// and return DHCP headers and options, including netboot info.
 	GetByMac(context.Context, net.HardwareAddr) (*data.DHCP, *data.Netboot, error)
 	GetByIP(context.Context, net.IP) (*data.DHCP, *data.Netboot, error)
+	RegisterHw(context.Context, net.HardwareAddr) error
 }

@@ -19,7 +19,7 @@ import (
 	"github.com/go-logr/stdr"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/tinkerbell/dhcp/data"
+	"github.com/raunovv/dhcp/data"
 )
 
 func TestNewWatcher(t *testing.T) {

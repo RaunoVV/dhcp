@@ -9,9 +9,9 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/insomniacslk/dhcp/dhcpv4"
-	"github.com/tinkerbell/dhcp/backend/noop"
-	"github.com/tinkerbell/dhcp/data"
-	oteldhcp "github.com/tinkerbell/dhcp/otel"
+	"github.com/raunovv/dhcp/backend/noop"
+	"github.com/raunovv/dhcp/data"
+	oteldhcp "github.com/raunovv/dhcp/otel"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -56,6 +56,10 @@ func (h *Handler) Handle(conn net.PacketConn, peer net.Addr, pkt *dhcpv4.DHCPv4)
 		if err != nil {
 			log.Error(err, "error reading from backend")
 			span.SetStatus(codes.Error, err.Error())
+
+			if h.AutoRegister {
+				h.registerHw(ctx, pkt.ClientHWAddr)
+			}
 
 			return
 		}
@@ -121,6 +125,29 @@ func (h *Handler) readBackend(ctx context.Context, mac net.HardwareAddr) (*data.
 	span.SetStatus(codes.Ok, "done reading from backend")
 
 	return d, n, nil
+}
+
+// registerHw encapsulates the registration of all dhcp discoveries
+func (h *Handler) registerHw(ctx context.Context, mac net.HardwareAddr) error {
+	h.setDefaults()
+
+	tracer := otel.Tracer(tracerName)
+	ctx, span := tracer.Start(ctx, "Hardware data get")
+	defer span.End()
+
+	err := h.Backend.RegisterHw(ctx, mac)
+	if err != nil {
+		h.Log.Info("error registering DHCP data to backend", "mac", mac, "error", err)
+		span.SetStatus(codes.Error, err.Error())
+
+		return err
+	}
+
+	//span.SetAttributes(d.EncodeToAttributes()...)
+	//span.SetAttributes(n.EncodeToAttributes()...)
+	span.SetStatus(codes.Ok, "done reading from backend")
+
+	return nil
 }
 
 // updateMsg handles updating DHCP packets with the data from the backend.

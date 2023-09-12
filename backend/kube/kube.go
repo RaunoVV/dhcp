@@ -182,6 +182,33 @@ func (b *Backend) GetByIP(ctx context.Context, ip net.IP) (*data.DHCP, *data.Net
 	return d, n, nil
 }
 
+// GetByIP implements the handler.BackendReader interface and returns DHCP and netboot data based on an IP address.
+func (b *Backend) RegisterHw(ctx context.Context, mac net.HardwareAddr) (bool, error) {
+	tracer := otel.Tracer(tracerName)
+	ctx, span := tracer.Start(ctx, "backend.kube.RegisterHw")
+	defer span.End()
+
+	newHardware := &v1alpha1.Hardware{
+		Spec: v1alpha1.HardwareSpec{
+			Interfaces: []v1alpha1.Interface{{Netboot: nil, DHCP: &v1alpha1.DHCP{
+				MAC: string(mac),
+			}}},
+		},
+	}
+
+	if err := b.cluster.GetClient().Create(ctx, newHardware); err != nil {
+		span.SetStatus(codes.Error, err.Error())
+
+		return false, fmt.Errorf("failed REGISTERING hardware for (%v): %w", mac, err)
+	}
+
+	//span.SetAttributes(d.EncodeToAttributes()...)
+	//span.SetAttributes(n.EncodeToAttributes()...)
+	span.SetStatus(codes.Ok, "")
+
+	return true, nil
+}
+
 // toDHCPData converts a v1alpha1.DHCP to a data.DHCP data structure.
 // if required fields are missing, an error is returned.
 // Required fields: v1alpha1.Interface.DHCP.MAC, v1alpha1.Interface.DHCP.IP.Address, v1alpha1.Interface.DHCP.IP.Netmask.
