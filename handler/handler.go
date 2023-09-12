@@ -5,7 +5,7 @@ import (
 	"context"
 	"net"
 
-	"github.com/tinkerbell/dhcp/data"
+	"github.com/raunovv/dhcp/data"
 )
 
 // BackendReader is the interface for getting data from a backend.

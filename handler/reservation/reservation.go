@@ -6,7 +6,7 @@ import (
 	"net/url"
 
 	"github.com/go-logr/logr"
-	"github.com/tinkerbell/dhcp/handler"
+	"github.com/raunovv/dhcp/handler"
 )
 
 // Handler holds the configuration details for the running the DHCP server.
