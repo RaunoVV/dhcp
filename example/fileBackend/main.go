@@ -13,10 +13,10 @@ import (
 	"github.com/equinix-labs/otel-init-go/otelinit"
 	"github.com/go-logr/logr"
 	"github.com/go-logr/stdr"
-	"github.com/tinkerbell/dhcp"
-	"github.com/tinkerbell/dhcp/backend/file"
-	"github.com/tinkerbell/dhcp/handler"
-	"github.com/tinkerbell/dhcp/handler/reservation"
+	"github.com/raunovv/dhcp"
+	"github.com/raunovv/dhcp/backend/file"
+	"github.com/raunovv/dhcp/handler"
+	"github.com/raunovv/dhcp/handler/reservation"
 )
 
 func main() {

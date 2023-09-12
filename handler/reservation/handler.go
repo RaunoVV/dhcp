@@ -18,7 +18,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-const tracerName = "github.com/tinkerbell/dhcp/server"
+const tracerName = "github.com/raunovv/dhcp/server"
 
 // setDefaults will update the Handler struct to have default values so as
 // to avoid panic for nil pointers and such.

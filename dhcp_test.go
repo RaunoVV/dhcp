@@ -12,7 +12,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/insomniacslk/dhcp/dhcpv4"
 	"github.com/insomniacslk/dhcp/dhcpv4/nclient4"
-	"github.com/tinkerbell/dhcp/handler/noop"
+	"github.com/raunovv/dhcp/handler/noop"
 	"golang.org/x/net/nettest"
 )
 

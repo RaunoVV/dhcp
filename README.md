@@ -1,4 +1,4 @@
-[![Test and Build](https://github.com/tinkerbell/dhcp/actions/workflows/ci.yaml/badge.svg)](https://github.com/tinkerbell/dhcp/actions/workflows/ci.yaml)
+[![Test and Build](https://github.com/raunovv/dhcp/actions/workflows/ci.yaml/badge.svg)](https://github.com/raunovv/dhcp/actions/workflows/ci.yaml)
 [![codecov](https://codecov.io/gh/tinkerbell/dhcp/branch/main/graph/badge.svg)](https://codecov.io/gh/tinkerbell/dhcp)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tinkerbell/dhcp)](https://goreportcard.com/report/github.com/tinkerbell/dhcp)
 [![Go Reference](https://pkg.go.dev/badge/github.com/tinkerbell/dhcp.svg)](https://pkg.go.dev/github.com/tinkerbell/dhcp)

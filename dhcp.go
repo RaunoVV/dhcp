@@ -11,7 +11,7 @@ import (
 	"dario.cat/mergo"
 	"github.com/insomniacslk/dhcp/dhcpv4"
 	"github.com/insomniacslk/dhcp/dhcpv4/server4"
-	"github.com/tinkerbell/dhcp/handler/noop"
+	"github.com/raunovv/dhcp/handler/noop"
 )
 
 // ErrNoConn is an error im still not sure i want to use.

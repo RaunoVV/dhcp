@@ -19,8 +19,8 @@ import (
 	"github.com/insomniacslk/dhcp/dhcpv4"
 	"github.com/insomniacslk/dhcp/iana"
 	"github.com/insomniacslk/dhcp/rfc1035label"
-	"github.com/tinkerbell/dhcp/data"
-	"github.com/tinkerbell/dhcp/otel"
+	"github.com/raunovv/dhcp/data"
+	"github.com/raunovv/dhcp/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"golang.org/x/net/nettest"
 )

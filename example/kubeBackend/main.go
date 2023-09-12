@@ -12,10 +12,10 @@ import (
 
 	"github.com/equinix-labs/otel-init-go/otelinit"
 	"github.com/go-logr/stdr"
+	"github.com/raunovv/dhcp/backend/kube"
+	"github.com/raunovv/dhcp/handler"
+	"github.com/raunovv/dhcp/handler/reservation"
 	"github.com/tinkerbell/dhcp"
-	"github.com/tinkerbell/dhcp/backend/kube"
-	"github.com/tinkerbell/dhcp/handler"
-	"github.com/tinkerbell/dhcp/handler/reservation"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 )
