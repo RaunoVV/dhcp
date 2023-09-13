@@ -1,3 +1,23 @@
+3c:ec:ef:4c:4f:50:
+  Arch: ""
+  BroadcastAddress: ""
+  DefaultGateway: ""
+  DomainName: ""
+  DomainSearch: null
+  Hostname: ""
+  IPAddress: ""
+  LeaseTime: 0
+  MACAddress: POzvTE9Q
+  NTPServers: null
+  NameServers: null
+  Netboot:
+    AllowPXE: false
+    Console: ""
+    Facility: ""
+    IPXEScript: ""
+    IPXEScriptURL: ""
+  SubnetMask: ""
+  VLANID: ""
 08:00:27:29:4E:67:
   Arch: ""
   BroadcastAddress: 192.168.2.255

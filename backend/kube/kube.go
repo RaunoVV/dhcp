@@ -5,8 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"net"
 	"net/netip"
 	"net/url"
@@ -185,52 +183,15 @@ func (b *Backend) GetByIP(ctx context.Context, ip net.IP) (*data.DHCP, *data.Net
 }
 
 // RegisterHw implements the handler.BackendReader interface and returns DHCP and netboot data based on an IP address.
-func (b *Backend) RegisterHw(ctx context.Context, mac net.HardwareAddr) error {
+func (b *Backend) RegisterHw(ctx context.Context, hwObject v1alpha1.Hardware) error {
 	tracer := otel.Tracer(tracerName)
 	ctx, span := tracer.Start(ctx, "backend.kube.RegisterHw")
 	defer span.End()
 
-	newHardware := v1alpha1.Hardware{
-		TypeMeta: v1.TypeMeta{
-			Kind:       "Hardware",
-			APIVersion: "tinkerbell.org/v1alpha1",
-		},
-		ObjectMeta: v1.ObjectMeta{
-			Name:      mac.String(),
-			Namespace: "default",
-		},
-		Spec: v1alpha1.HardwareSpec{
-			Interfaces: []v1alpha1.Interface{
-				{
-					Netboot: &v1alpha1.Netboot{
-						AllowPXE:      &[]bool{true}[0],
-						AllowWorkflow: &[]bool{true}[0],
-						IPXE: &v1alpha1.IPXE{
-							URL: "http://netboot.xyz",
-						},
-					},
-					DHCP: &v1alpha1.DHCP{
-						Arch:     "x86_64",
-						Hostname: "sm01",
-						IP: &v1alpha1.IP{
-							Address: "172.16.10.100",
-							Gateway: "172.16.10.1",
-							Netmask: "255.255.255.0",
-						},
-						LeaseTime:   86400,
-						MAC:         mac.String(),
-						NameServers: []string{"1.1.1.1"},
-						UEFI:        true,
-					},
-				},
-			},
-		},
-	}
-
-	if err := b.cluster.GetClient().Create(ctx, &newHardware); err != nil {
+	if err := b.cluster.GetClient().Create(ctx, &hwObject); err != nil {
 		span.SetStatus(codes.Error, err.Error())
 
-		return fmt.Errorf("failed REGISTERING hardware for (%v): %w", mac, err)
+		return fmt.Errorf("failed REGISTERING hardware for (%v): %w", hwObject, err)
 	}
 
 	span.SetStatus(codes.Ok, "")

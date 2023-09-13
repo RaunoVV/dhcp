@@ -4,6 +4,7 @@ package file
 import (
 	"context"
 	"fmt"
+	"github.com/tinkerbell/tink/api/v1alpha1"
 	"net"
 	"net/netip"
 	"net/url"
@@ -196,7 +197,7 @@ func (w *Watcher) GetByIP(ctx context.Context, ip net.IP) (*data.DHCP, *data.Net
 
 // RegisterHw is the implementation of the Backend interface.
 // It reads a given file from the in memory data (w.data).
-func (w *Watcher) RegisterHw(ctx context.Context, mac net.HardwareAddr) error {
+func (w *Watcher) RegisterHw(ctx context.Context, hwObject v1alpha1.Hardware) error {
 	tracer := otel.Tracer(tracerName)
 	_, span := tracer.Start(ctx, "backend.file.RegisterHw")
 	defer span.End()
@@ -216,8 +217,10 @@ func (w *Watcher) RegisterHw(ctx context.Context, mac net.HardwareAddr) error {
 	if r == nil {
 		r = make(map[string]dhcp)
 	}
-	r[mac.String()] = dhcp{
-		MACAddress: mac,
+	mac := hwObject.Spec.Interfaces[0].DHCP.MAC
+	macObj, _ := net.ParseMAC(mac)
+	r[mac] = dhcp{
+		MACAddress: macObj,
 		Netboot: netboot{
 			AllowPXE: false,
 		},

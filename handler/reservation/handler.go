@@ -4,18 +4,20 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net"
-	"strings"
-
 	"github.com/go-logr/logr"
 	"github.com/insomniacslk/dhcp/dhcpv4"
+	"github.com/lucasepe/codename"
 	"github.com/raunovv/dhcp/backend/noop"
 	"github.com/raunovv/dhcp/data"
 	oteldhcp "github.com/raunovv/dhcp/otel"
+	"github.com/tinkerbell/tink/api/v1alpha1"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"net"
+	"strings"
 )
 
 const tracerName = "github.com/raunovv/dhcp/server"
@@ -135,7 +137,44 @@ func (h *Handler) registerHw(ctx context.Context, mac net.HardwareAddr) error {
 	ctx, span := tracer.Start(ctx, "Hardware data get")
 	defer span.End()
 
-	err := h.Backend.RegisterHw(ctx, mac)
+	hwObject := v1alpha1.Hardware{
+		TypeMeta: v1.TypeMeta{
+			Kind:       "Hardware",
+			APIVersion: "tinkerbell.org/v1alpha1",
+		},
+		ObjectMeta: v1.ObjectMeta{
+			Name:      GenerateHwName(),
+			Namespace: "default",
+		},
+		Spec: v1alpha1.HardwareSpec{
+			Interfaces: []v1alpha1.Interface{
+				{
+					Netboot: &v1alpha1.Netboot{
+						AllowPXE:      &[]bool{true}[0],
+						AllowWorkflow: &[]bool{true}[0],
+						IPXE: &v1alpha1.IPXE{
+							URL: "http://netboot.xyz",
+						},
+					},
+					DHCP: &v1alpha1.DHCP{
+						Arch:     "x86_64",
+						Hostname: "sm01",
+						IP: &v1alpha1.IP{
+							Address: "172.16.10.100",
+							Gateway: "172.16.10.1",
+							Netmask: "255.255.255.0",
+						},
+						LeaseTime:   86400,
+						MAC:         mac.String(),
+						NameServers: []string{"1.1.1.1"},
+						UEFI:        true,
+					},
+				},
+			},
+		},
+	}
+	h.Log.Info("auto registering hw information {{hw}}", "hw", hwObject, "error")
+	err := h.Backend.RegisterHw(ctx, hwObject)
 	if err != nil {
 		h.Log.Info("error registering DHCP data to backend", "mac", mac, "error", err)
 		span.SetStatus(codes.Error, err.Error())
@@ -148,6 +187,14 @@ func (h *Handler) registerHw(ctx context.Context, mac net.HardwareAddr) error {
 	span.SetStatus(codes.Ok, "done reading from backend")
 
 	return nil
+}
+
+func GenerateHwName() string {
+	rng, err := codename.DefaultRNG()
+	if err != nil {
+		panic(err)
+	}
+	return codename.Generate(rng, 0)
 }
 
 // updateMsg handles updating DHCP packets with the data from the backend.

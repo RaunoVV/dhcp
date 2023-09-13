@@ -5,7 +5,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/raunovv/dhcp/handler/reservation"
+	"github.com/tinkerbell/tink/api/v1alpha1"
 	"io/fs"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"log"
 	"net"
 	"net/netip"
@@ -391,10 +394,47 @@ func TestRegisterHw(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			err = w.RegisterHw(context.Background(), tt.mac)
+			err = w.RegisterHw(context.Background(), hwObject3)
 			if !errors.Is(err, tt.wantErr) {
 				t.Fatal(err)
 			}
 		})
 	}
+}
+
+var hwObject3 = v1alpha1.Hardware{
+	TypeMeta: v1.TypeMeta{
+		Kind:       "Hardware",
+		APIVersion: "tinkerbell.org/v1alpha1",
+	},
+	ObjectMeta: v1.ObjectMeta{
+		Name:      reservation.GenerateHwName(),
+		Namespace: "default",
+	},
+	Spec: v1alpha1.HardwareSpec{
+		Interfaces: []v1alpha1.Interface{
+			{
+				Netboot: &v1alpha1.Netboot{
+					AllowPXE:      &[]bool{true}[0],
+					AllowWorkflow: &[]bool{true}[0],
+					IPXE: &v1alpha1.IPXE{
+						URL: "http://netboot.xyz",
+					},
+				},
+				DHCP: &v1alpha1.DHCP{
+					Arch:     "x86_64",
+					Hostname: "sm01",
+					IP: &v1alpha1.IP{
+						Address: "172.16.10.101",
+						Gateway: "172.16.10.1",
+						Netmask: "255.255.255.0",
+					},
+					LeaseTime:   86400,
+					MAC:         "3c:ec:ef:4c:4f:50",
+					NameServers: []string{"1.1.1.1"},
+					UEFI:        true,
+				},
+			},
+		},
+	},
 }

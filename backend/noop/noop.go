@@ -4,6 +4,7 @@ package noop
 import (
 	"context"
 	"errors"
+	"github.com/tinkerbell/tink/api/v1alpha1"
 	"net"
 
 	"github.com/raunovv/dhcp/data"
@@ -12,7 +13,7 @@ import (
 // Handler is a noop backend.
 type Handler struct{}
 
-func (h Handler) RegisterHw(ctx context.Context, addr net.HardwareAddr) error {
+func (h Handler) RegisterHw(ctx context.Context, hwObject v1alpha1.Hardware) error {
 	return errors.New("no backend specified, please specify a backend")
 }
 

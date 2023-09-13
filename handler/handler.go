@@ -3,6 +3,7 @@ package handler
 
 import (
 	"context"
+	"github.com/tinkerbell/tink/api/v1alpha1"
 	"net"
 
 	"github.com/raunovv/dhcp/data"
@@ -16,5 +17,5 @@ type BackendReader interface {
 	// and return DHCP headers and options, including netboot info.
 	GetByMac(context.Context, net.HardwareAddr) (*data.DHCP, *data.Netboot, error)
 	GetByIP(context.Context, net.IP) (*data.DHCP, *data.Netboot, error)
-	RegisterHw(context.Context, net.HardwareAddr) error
+	RegisterHw(context.Context, v1alpha1.Hardware) error
 }

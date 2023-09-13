@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/tinkerbell/tink/api/v1alpha1"
 	"log"
 	"net"
 	"net/netip"
@@ -33,7 +34,7 @@ type mockBackend struct {
 	ipxeScript   *url.URL
 }
 
-func (m *mockBackend) RegisterHw(ctx context.Context, addr net.HardwareAddr) error {
+func (m *mockBackend) RegisterHw(ctx context.Context, hwObject v1alpha1.Hardware) error {
 	return nil
 }
 

@@ -2,26 +2,26 @@ package kube
 
 import (
 	"context"
-	"net"
-	"net/http"
-	"net/netip"
-	"net/url"
-	"testing"
-
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/raunovv/dhcp/data"
+	"github.com/raunovv/dhcp/handler/reservation"
 	"github.com/tinkerbell/tink/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"net"
+	"net/http"
+	"net/netip"
+	"net/url"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/cache/informertest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/cluster"
+	"testing"
 )
 
 func TestNewBackend(t *testing.T) {
@@ -366,7 +366,7 @@ func TestGetByMac(t *testing.T) {
 func TestRegisterHw(t *testing.T) {
 	tests := map[string]struct {
 		hwObject    []v1alpha1.Hardware
-		MACAddress  net.HardwareAddr
+		hwObject2   v1alpha1.Hardware
 		wantDHCP    *data.DHCP
 		wantNetboot *data.Netboot
 		shouldErr   bool
@@ -377,7 +377,7 @@ func TestRegisterHw(t *testing.T) {
 		//"bad dhcp data":          {shouldErr: true, hwObject: []v1alpha1.Hardware{badDHCPObject}},
 		//"bad netboot data":       {shouldErr: true, hwObject: []v1alpha1.Hardware{badNetbootObject}},
 		//"fail to list hardware":  {shouldErr: true, failToList: true},
-		"good data": {hwObject: []v1alpha1.Hardware{hwObject1}, MACAddress: net.HardwareAddr{0x3c, 0xec, 0xef, 0x4c, 0x4f, 0x50}, wantDHCP: &data.DHCP{
+		"good data": {hwObject: []v1alpha1.Hardware{hwObject1}, hwObject2: hwObject3, wantDHCP: &data.DHCP{
 			MACAddress:     net.HardwareAddr{0x3c, 0xec, 0xef, 0x4c, 0x4f, 0x50},
 			IPAddress:      netip.MustParseAddr("172.16.10.100"),
 			SubnetMask:     []byte{0xff, 0xff, 0xff, 0x00},
@@ -439,12 +439,13 @@ func TestRegisterHw(t *testing.T) {
 			}
 
 			go b.Start(context.Background())
-			if err := b.RegisterHw(context.Background(), tc.MACAddress); err != nil {
+			t.Logf("%+v", tc.hwObject2)
+			if err := b.RegisterHw(context.Background(), tc.hwObject2); err != nil {
 				t.Fatal(err)
 			}
 			//tc.hwObject = append(tc.hwObject, *hwObj)
-
-			gotDHCP, gotNetboot, err := b.GetByMac(context.Background(), tc.MACAddress)
+			macObject, _ := net.ParseMAC(tc.hwObject2.Spec.Interfaces[0].DHCP.MAC)
+			gotDHCP, gotNetboot, err := b.GetByMac(context.Background(), macObject)
 			if tc.shouldErr && err == nil {
 				t.Log(err)
 				t.Fatal("expected error")
@@ -527,6 +528,42 @@ var hwObject2 = v1alpha1.Hardware{
 					},
 					LeaseTime:   86400,
 					MAC:         "3c:ec:ef:4c:4f:55",
+					NameServers: []string{"1.1.1.1"},
+					UEFI:        true,
+				},
+			},
+		},
+	},
+}
+var hwObject3 = v1alpha1.Hardware{
+	TypeMeta: v1.TypeMeta{
+		Kind:       "Hardware",
+		APIVersion: "tinkerbell.org/v1alpha1",
+	},
+	ObjectMeta: v1.ObjectMeta{
+		Name:      reservation.GenerateHwName(),
+		Namespace: "default",
+	},
+	Spec: v1alpha1.HardwareSpec{
+		Interfaces: []v1alpha1.Interface{
+			{
+				Netboot: &v1alpha1.Netboot{
+					AllowPXE:      &[]bool{true}[0],
+					AllowWorkflow: &[]bool{true}[0],
+					IPXE: &v1alpha1.IPXE{
+						URL: "http://netboot.xyz",
+					},
+				},
+				DHCP: &v1alpha1.DHCP{
+					Arch:     "x86_64",
+					Hostname: "sm01",
+					IP: &v1alpha1.IP{
+						Address: "172.16.10.101",
+						Gateway: "172.16.10.1",
+						Netmask: "255.255.255.0",
+					},
+					LeaseTime:   86400,
+					MAC:         "3c:ec:ef:4c:4f:50",
 					NameServers: []string{"1.1.1.1"},
 					UEFI:        true,
 				},
