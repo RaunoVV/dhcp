@@ -1,80 +1,140 @@
----
 08:00:27:29:4E:67:
-  ipAddress: '192.168.2.153'
-  subnetMask: '255.255.255.0'
-  defaultGateway: '192.168.2.1'
-  nameServers:
-  - '8.8.8.8'
-  - '1.1.1.1'
-  hostname: 'pxe-virtualbox'
-  domainName: 'example.com'
-  broadcastAddress: '192.168.2.255'
-  ntpServers:
-  - '132.163.96.2'
-  - '132.163.96.3'
-  leaseTime: 86400
-  domainSearch:
-  - 'example.com'
-  netboot:
-    allowPxe: true
-    ipxeScriptUrl: 'https://boot.netboot.xyz'
+  Arch: ""
+  BroadcastAddress: 192.168.2.255
+  DefaultGateway: 192.168.2.1
+  DomainName: example.com
+  DomainSearch:
+  - example.com
+  Hostname: pxe-virtualbox
+  IPAddress: 192.168.2.153
+  LeaseTime: 86400
+  MACAddress: null
+  NTPServers:
+  - 132.163.96.2
+  - 132.163.96.3
+  NameServers:
+  - 8.8.8.8
+  - 1.1.1.1
+  Netboot:
+    AllowPXE: true
+    Console: ""
+    Facility: ""
+    IPXEScript: ""
+    IPXEScriptURL: https://boot.netboot.xyz
+  SubnetMask: 255.255.255.0
+  VLANID: ""
+08:00:27:29:4E:68:
+  Arch: ""
+  BroadcastAddress: ""
+  DefaultGateway: ""
+  DomainName: ""
+  DomainSearch: null
+  Hostname: ""
+  IPAddress: "3"
+  LeaseTime: 0
+  MACAddress: null
+  NTPServers: null
+  NameServers: null
+  Netboot:
+    AllowPXE: false
+    Console: ""
+    Facility: ""
+    IPXEScript: ""
+    IPXEScriptURL: ""
+  SubnetMask: 255.255.255.0
+  VLANID: ""
+08:00:27:29:4e:67:
+  Arch: ""
+  BroadcastAddress: ""
+  DefaultGateway: ""
+  DomainName: ""
+  DomainSearch: null
+  Hostname: ""
+  IPAddress: ""
+  LeaseTime: 0
+  MACAddress: CAAnKU5n
+  NTPServers: null
+  NameServers: null
+  Netboot:
+    AllowPXE: false
+    Console: ""
+    Facility: ""
+    IPXEScript: ""
+    IPXEScriptURL: ""
+  SubnetMask: ""
+  VLANID: ""
 52:54:00:aa:88:2a:
-  ipAddress: '192.168.2.15'
-  subnetMask: '255.255.255.0'
-  defaultGateway: '192.168.2.1'
-  nameServers:
-  - '8.8.8.8'
-  - '1.1.1.1'
-  hostname: 'sandbox'
-  domainName: 'example.com'
-  broadcastAddress: '192.168.2.255'
-  ntpServers:
-  - '132.163.96.2'
-  - '132.163.96.3'
-  leaseTime: 86400
-  domainSearch:
-  - 'example.com'
-  netboot:
-    allowPxe: true
-    ipxeScriptUrl: 'https://boot.netboot.xyz'
+  Arch: ""
+  BroadcastAddress: 192.168.2.255
+  DefaultGateway: 192.168.2.1
+  DomainName: example.com
+  DomainSearch:
+  - example.com
+  Hostname: sandbox
+  IPAddress: 192.168.2.15
+  LeaseTime: 86400
+  MACAddress: null
+  NTPServers:
+  - 132.163.96.2
+  - 132.163.96.3
+  NameServers:
+  - 8.8.8.8
+  - 1.1.1.1
+  Netboot:
+    AllowPXE: true
+    Console: ""
+    Facility: ""
+    IPXEScript: ""
+    IPXEScriptURL: https://boot.netboot.xyz
+  SubnetMask: 255.255.255.0
+  VLANID: ""
 86:96:b0:6e:ca:36:
-  ipAddress: '192.168.2.158'
-  subnetMask: '255.255.255.0'
-  defaultGateway: '192.168.2.1'
-  nameServers:
-  - '8.8.8.8'
-  - '1.1.1.1'
-  hostname: 'pxe-proxmox'
-  domainName: 'example.com'
-  broadcastAddress: '192.168.2.255'
-  ntpServers:
-  - '132.163.96.2'
-  - '132.163.96.3'
-  leaseTime: 86400
-  domainSearch:
-  - 'example.com'
-  netboot:
-    allowPxe: true
-    ipxeScriptUrl: 'http://boot.netboot.xyz'
+  Arch: ""
+  BroadcastAddress: 192.168.2.255
+  DefaultGateway: 192.168.2.1
+  DomainName: example.com
+  DomainSearch:
+  - example.com
+  Hostname: pxe-proxmox
+  IPAddress: 192.168.2.158
+  LeaseTime: 86400
+  MACAddress: null
+  NTPServers:
+  - 132.163.96.2
+  - 132.163.96.3
+  NameServers:
+  - 8.8.8.8
+  - 1.1.1.1
+  Netboot:
+    AllowPXE: true
+    Console: ""
+    Facility: ""
+    IPXEScript: ""
+    IPXEScriptURL: http://boot.netboot.xyz
+  SubnetMask: 255.255.255.0
+  VLANID: ""
 b4:96:91:6f:33:d0:
-  ipAddress: '192.168.56.15'
-  subnetMask: '255.255.255.0'
-  defaultGateway: '192.168.56.4'
-  nameServers:
-  - '8.8.8.8'
-  - '1.1.1.1'
-  hostname: 'dhcp-testing'
-  domainName: 'example.com'
-  broadcastAddress: '192.168.56.255'
-  ntpServers:
-  - '132.163.96.2'
-  - '132.163.96.3'
-  leaseTime: 86400
-  domainSearch:
-  - 'example.com'
-  netboot:
-    allowPxe: true
-    ipxeScriptUrl: 'https://boot.netboot.xyz'
-08:00:27:29:4E:68: # bad data
-  ipAddress: '3'
-  subnetMask: '255.255.255.0'
+  Arch: ""
+  BroadcastAddress: 192.168.56.255
+  DefaultGateway: 192.168.56.4
+  DomainName: example.com
+  DomainSearch:
+  - example.com
+  Hostname: dhcp-testing
+  IPAddress: 192.168.56.15
+  LeaseTime: 86400
+  MACAddress: null
+  NTPServers:
+  - 132.163.96.2
+  - 132.163.96.3
+  NameServers:
+  - 8.8.8.8
+  - 1.1.1.1
+  Netboot:
+    AllowPXE: true
+    Console: ""
+    Facility: ""
+    IPXEScript: ""
+    IPXEScriptURL: https://boot.netboot.xyz
+  SubnetMask: 255.255.255.0
+  VLANID: ""

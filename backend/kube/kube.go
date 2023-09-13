@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"net"
 	"net/netip"
 	"net/url"
@@ -182,31 +184,58 @@ func (b *Backend) GetByIP(ctx context.Context, ip net.IP) (*data.DHCP, *data.Net
 	return d, n, nil
 }
 
-// GetByIP implements the handler.BackendReader interface and returns DHCP and netboot data based on an IP address.
-func (b *Backend) RegisterHw(ctx context.Context, mac net.HardwareAddr) (bool, error) {
+// RegisterHw implements the handler.BackendReader interface and returns DHCP and netboot data based on an IP address.
+func (b *Backend) RegisterHw(ctx context.Context, mac net.HardwareAddr) error {
 	tracer := otel.Tracer(tracerName)
 	ctx, span := tracer.Start(ctx, "backend.kube.RegisterHw")
 	defer span.End()
 
-	newHardware := &v1alpha1.Hardware{
+	newHardware := v1alpha1.Hardware{
+		TypeMeta: v1.TypeMeta{
+			Kind:       "Hardware",
+			APIVersion: "tinkerbell.org/v1alpha1",
+		},
+		ObjectMeta: v1.ObjectMeta{
+			Name:      mac.String(),
+			Namespace: "default",
+		},
 		Spec: v1alpha1.HardwareSpec{
-			Interfaces: []v1alpha1.Interface{{Netboot: nil, DHCP: &v1alpha1.DHCP{
-				MAC: string(mac),
-			}}},
+			Interfaces: []v1alpha1.Interface{
+				{
+					Netboot: &v1alpha1.Netboot{
+						AllowPXE:      &[]bool{true}[0],
+						AllowWorkflow: &[]bool{true}[0],
+						IPXE: &v1alpha1.IPXE{
+							URL: "http://netboot.xyz",
+						},
+					},
+					DHCP: &v1alpha1.DHCP{
+						Arch:     "x86_64",
+						Hostname: "sm01",
+						IP: &v1alpha1.IP{
+							Address: "172.16.10.100",
+							Gateway: "172.16.10.1",
+							Netmask: "255.255.255.0",
+						},
+						LeaseTime:   86400,
+						MAC:         mac.String(),
+						NameServers: []string{"1.1.1.1"},
+						UEFI:        true,
+					},
+				},
+			},
 		},
 	}
 
-	if err := b.cluster.GetClient().Create(ctx, newHardware); err != nil {
+	if err := b.cluster.GetClient().Create(ctx, &newHardware); err != nil {
 		span.SetStatus(codes.Error, err.Error())
 
-		return false, fmt.Errorf("failed REGISTERING hardware for (%v): %w", mac, err)
+		return fmt.Errorf("failed REGISTERING hardware for (%v): %w", mac, err)
 	}
 
-	//span.SetAttributes(d.EncodeToAttributes()...)
-	//span.SetAttributes(n.EncodeToAttributes()...)
 	span.SetStatus(codes.Ok, "")
 
-	return true, nil
+	return nil
 }
 
 // toDHCPData converts a v1alpha1.DHCP to a data.DHCP data structure.

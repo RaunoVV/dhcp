@@ -194,6 +194,57 @@ func (w *Watcher) GetByIP(ctx context.Context, ip net.IP) (*data.DHCP, *data.Net
 	return nil, nil, err
 }
 
+// RegisterHw is the implementation of the Backend interface.
+// It reads a given file from the in memory data (w.data).
+func (w *Watcher) RegisterHw(ctx context.Context, mac net.HardwareAddr) error {
+	tracer := otel.Tracer(tracerName)
+	_, span := tracer.Start(ctx, "backend.file.RegisterHw")
+	defer span.End()
+
+	// get data from file, translate it, then pass it into setDHCPOpts and setNetworkBootOpts
+	w.dataMu.RLock()
+	d := w.data
+	w.dataMu.RUnlock()
+	r := make(map[string]dhcp)
+	if err := yaml.Unmarshal(d, &r); err != nil {
+		err := fmt.Errorf("%w: %w", err, errFileFormat)
+		w.Log.Error(err, "failed to unmarshal file data")
+		span.SetStatus(codes.Error, err.Error())
+
+		return err
+	}
+	if r == nil {
+		r = make(map[string]dhcp)
+	}
+	r[mac.String()] = dhcp{
+		MACAddress: mac,
+		Netboot: netboot{
+			AllowPXE: false,
+		},
+	}
+
+	data, err := yaml.Marshal(&r)
+	if err != nil {
+		err := fmt.Errorf("%w: %w", err, errFileFormat)
+		w.Log.Error(err, "failed to unmarshal file data")
+		span.SetStatus(codes.Error, err.Error())
+
+		return err
+	}
+	w.fileMu.Lock()
+
+	if err := os.WriteFile(filepath.Clean(w.FilePath), data, 0666); err != nil {
+		err := fmt.Errorf("%w: %w", err, errFileFormat)
+		w.Log.Error(err, "failed to write file data")
+		span.SetStatus(codes.Error, err.Error())
+
+		return err
+	}
+	w.fileMu.Unlock()
+
+	return nil
+}
+
 // Start starts watching a file for changes and updates the in memory data (w.data) on changes.
 // Start is a blocking method. Use a context cancellation to exit.
 func (w *Watcher) Start(ctx context.Context) {

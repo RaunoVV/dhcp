@@ -363,6 +363,104 @@ func TestGetByMac(t *testing.T) {
 	}
 }
 
+func TestRegisterHw(t *testing.T) {
+	tests := map[string]struct {
+		hwObject    []v1alpha1.Hardware
+		MACAddress  net.HardwareAddr
+		wantDHCP    *data.DHCP
+		wantNetboot *data.Netboot
+		shouldErr   bool
+		failToList  bool
+	}{
+		//"empty hardware list":    {shouldErr: true},
+		//"more than one hardware": {shouldErr: true, hwObject: []v1alpha1.Hardware{hwObject1, hwObject2}},
+		//"bad dhcp data":          {shouldErr: true, hwObject: []v1alpha1.Hardware{badDHCPObject}},
+		//"bad netboot data":       {shouldErr: true, hwObject: []v1alpha1.Hardware{badNetbootObject}},
+		//"fail to list hardware":  {shouldErr: true, failToList: true},
+		"good data": {hwObject: []v1alpha1.Hardware{hwObject1}, MACAddress: net.HardwareAddr{0x3c, 0xec, 0xef, 0x4c, 0x4f, 0x50}, wantDHCP: &data.DHCP{
+			MACAddress:     net.HardwareAddr{0x3c, 0xec, 0xef, 0x4c, 0x4f, 0x50},
+			IPAddress:      netip.MustParseAddr("172.16.10.100"),
+			SubnetMask:     []byte{0xff, 0xff, 0xff, 0x00},
+			DefaultGateway: netip.MustParseAddr("255.255.255.0"),
+			NameServers: []net.IP{
+				{0x1, 0x1, 0x1, 0x1},
+			},
+			Hostname:  "sm01",
+			LeaseTime: 86400,
+			Arch:      "x86_64",
+		}, wantNetboot: &data.Netboot{
+			AllowNetboot: true,
+			IPXEScriptURL: &url.URL{
+				Scheme: "http",
+				Host:   "netboot.xyz",
+			},
+		}},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			rs := runtime.NewScheme()
+			if err := scheme.AddToScheme(rs); err != nil {
+				t.Fatal(err)
+			}
+			if err := v1alpha1.AddToScheme(rs); err != nil {
+				t.Fatal(err)
+			}
+
+			ct := fake.NewClientBuilder()
+			if !tc.failToList {
+				ct = ct.WithScheme(rs)
+				ct = ct.WithRuntimeObjects(&v1alpha1.HardwareList{})
+				ct = ct.WithIndex(&v1alpha1.Hardware{}, MACAddrIndex, MACAddrs)
+			}
+
+			if len(tc.hwObject) > 0 {
+				t.Logf("%+v", tc.hwObject[0].Spec.Interfaces[0].DHCP)
+				t.Logf("%+v", tc.hwObject[0].Spec.Interfaces[0].DHCP.MAC)
+				ct = ct.WithLists(&v1alpha1.HardwareList{Items: tc.hwObject})
+			}
+			cl := ct.Build()
+
+			fn := func(o *cluster.Options) {
+				o.NewClient = func(config *rest.Config, options client.Options) (client.Client, error) {
+					return cl, nil
+				}
+				o.MapperProvider = func(c *rest.Config, httpClient *http.Client) (meta.RESTMapper, error) {
+					return cl.RESTMapper(), nil
+				}
+				o.NewCache = func(config *rest.Config, options cache.Options) (cache.Cache, error) {
+					return &informertest.FakeInformers{Scheme: cl.Scheme()}, nil
+				}
+			}
+			rc := new(rest.Config)
+			b, err := NewBackend(rc, fn)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			go b.Start(context.Background())
+			if err := b.RegisterHw(context.Background(), tc.MACAddress); err != nil {
+				t.Fatal(err)
+			}
+			//tc.hwObject = append(tc.hwObject, *hwObj)
+
+			gotDHCP, gotNetboot, err := b.GetByMac(context.Background(), tc.MACAddress)
+			if tc.shouldErr && err == nil {
+				t.Log(err)
+				t.Fatal("expected error")
+			}
+
+			if diff := cmp.Diff(gotDHCP, tc.wantDHCP, cmpopts.IgnoreUnexported(netip.Addr{})); diff != "" {
+				t.Fatal(diff)
+			}
+
+			if diff := cmp.Diff(gotNetboot, tc.wantNetboot); diff != "" {
+				t.Fatal(diff)
+			}
+		})
+	}
+}
+
 var hwObject1 = v1alpha1.Hardware{
 	TypeMeta: v1.TypeMeta{
 		Kind:       "Hardware",

@@ -370,3 +370,31 @@ func TestGetByIP(t *testing.T) {
 		})
 	}
 }
+
+func TestRegisterHw(t *testing.T) {
+	tests := map[string]struct {
+		mac     net.HardwareAddr
+		badData bool
+		wantErr error
+	}{
+		//"no record found":        {mac: net.HardwareAddr{0x00, 0x01, 0x02, 0x03, 0x04, 0x05}, wantErr: errRecordNotFound},
+		"record registered": {mac: net.HardwareAddr{0x08, 0x00, 0x27, 0x29, 0x4e, 0x67}, wantErr: nil},
+		//"fail error translating": {mac: net.HardwareAddr{0x08, 0x00, 0x27, 0x29, 0x4e, 0x68}, wantErr: errParseIP},
+		//"fail parsing file":      {badData: true, wantErr: errFileFormat},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			data := "testdata/example.yaml"
+
+			w, err := NewWatcher(logr.Discard(), data)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = w.RegisterHw(context.Background(), tt.mac)
+			if !errors.Is(err, tt.wantErr) {
+				t.Fatal(err)
+			}
+		})
+	}
+}
