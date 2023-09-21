@@ -156,9 +156,9 @@ func (h *Handler) registerHw(ctx context.Context, mac net.HardwareAddr) error {
 						Arch:     "x86_64",
 						Hostname: "sm01",
 						IP: &v1alpha1.IP{
-							Address: "",
-							Gateway: "",
-							Netmask: "",
+							Address: "127.0.0.5",
+							Gateway: "127.0.0.1",
+							Netmask: "255.255.255.0",
 						},
 						LeaseTime:   86400,
 						MAC:         mac.String(),
