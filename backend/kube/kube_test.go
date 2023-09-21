@@ -389,11 +389,7 @@ func TestRegisterHw(t *testing.T) {
 			LeaseTime: 86400,
 			Arch:      "x86_64",
 		}, wantNetboot: &data.Netboot{
-			AllowNetboot: true,
-			IPXEScriptURL: &url.URL{
-				Scheme: "http",
-				Host:   "netboot.xyz",
-			},
+			AllowNetboot: false,
 		}},
 	}
 
@@ -449,9 +445,11 @@ func TestRegisterHw(t *testing.T) {
 			if tc.shouldErr && err == nil {
 				t.Log(err)
 				t.Fatal("expected error")
+			} else if err != nil {
+				t.Fatal(err)
 			}
 
-			if diff := cmp.Diff(gotDHCP, tc.wantDHCP, cmpopts.IgnoreUnexported(netip.Addr{})); diff != "" {
+			if diff := cmp.Diff(gotDHCP, tc.wantDHCP, cmpopts.IgnoreUnexported(netip.Addr{}, v1.ObjectMeta{})); diff != "" {
 				t.Fatal(diff)
 			}
 
@@ -548,24 +546,20 @@ var hwObject3 = v1alpha1.Hardware{
 		Interfaces: []v1alpha1.Interface{
 			{
 				Netboot: &v1alpha1.Netboot{
-					AllowPXE:      &[]bool{true}[0],
-					AllowWorkflow: &[]bool{true}[0],
-					IPXE: &v1alpha1.IPXE{
-						URL: "http://netboot.xyz",
-					},
+					AllowPXE:      &[]bool{false}[0],
+					AllowWorkflow: &[]bool{false}[0],
 				},
 				DHCP: &v1alpha1.DHCP{
 					Arch:     "x86_64",
 					Hostname: "sm01",
 					IP: &v1alpha1.IP{
-						Address: "172.16.10.101",
+						Address: "172.16.10.100",
 						Gateway: "172.16.10.1",
-						Netmask: "255.255.255.0",
-					},
+						Netmask: "255.255.255.0"},
 					LeaseTime:   86400,
 					MAC:         "3c:ec:ef:4c:4f:50",
 					NameServers: []string{"1.1.1.1"},
-					UEFI:        true,
+					UEFI:        false,
 				},
 			},
 		},

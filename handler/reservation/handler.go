@@ -150,24 +150,21 @@ func (h *Handler) registerHw(ctx context.Context, mac net.HardwareAddr) error {
 			Interfaces: []v1alpha1.Interface{
 				{
 					Netboot: &v1alpha1.Netboot{
-						AllowPXE:      &[]bool{true}[0],
-						AllowWorkflow: &[]bool{true}[0],
-						IPXE: &v1alpha1.IPXE{
-							URL: "http://netboot.xyz",
-						},
+						AllowPXE:      &[]bool{false}[0],
+						AllowWorkflow: &[]bool{false}[0],
 					},
 					DHCP: &v1alpha1.DHCP{
 						Arch:     "x86_64",
 						Hostname: "sm01",
 						IP: &v1alpha1.IP{
-							Address: "172.16.10.100",
-							Gateway: "172.16.10.1",
-							Netmask: "255.255.255.0",
+							Address: "",
+							Gateway: "",
+							Netmask: "",
 						},
 						LeaseTime:   86400,
 						MAC:         mac.String(),
 						NameServers: []string{"1.1.1.1"},
-						UEFI:        true,
+						UEFI:        false,
 					},
 				},
 			},

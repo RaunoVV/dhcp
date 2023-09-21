@@ -218,9 +218,20 @@ func (w *Watcher) RegisterHw(ctx context.Context, hwObject v1alpha1.Hardware) er
 		r = make(map[string]dhcp)
 	}
 	mac := hwObject.Spec.Interfaces[0].DHCP.MAC
-	macObj, _ := net.ParseMAC(mac)
+	macObj, err := net.ParseMAC(mac)
+	if err != nil {
+		err := fmt.Errorf("%w: %w", err, errFileFormat)
+		w.Log.Error(err, "failed to parse mac")
+		span.SetStatus(codes.Error, err.Error())
+
+		return err
+	}
+
 	r[mac] = dhcp{
-		MACAddress: macObj,
+		MACAddress:     macObj,
+		IPAddress:      hwObject.Spec.Interfaces[0].DHCP.IP.Address,
+		DefaultGateway: hwObject.Spec.Interfaces[0].DHCP.IP.Gateway,
+		SubnetMask:     hwObject.Spec.Interfaces[0].DHCP.IP.Netmask,
 		Netboot: netboot{
 			AllowPXE: false,
 		},

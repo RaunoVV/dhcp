@@ -27,6 +27,9 @@ import (
 )
 
 var errBadBackend = fmt.Errorf("bad backend")
+var errMacNotFound = func(mac net.HardwareAddr, err string) error {
+	return fmt.Errorf("failed listing hardware for (%v): %s", mac, err)
+}
 
 type mockBackend struct {
 	err          error
@@ -34,7 +37,8 @@ type mockBackend struct {
 	ipxeScript   *url.URL
 }
 
-func (m *mockBackend) RegisterHw(ctx context.Context, hwObject v1alpha1.Hardware) error {
+func (m *mockBackend) RegisterHw(ctx context.Context, hardware v1alpha1.Hardware) error {
+	//TODO implement me
 	return nil
 }
 
@@ -236,6 +240,41 @@ func TestHandle(t *testing.T) {
 			want:    nil,
 			wantErr: errBadBackend,
 		},
+		/*"autoregister missing hw": {
+			server: Handler{
+				Backend:      &mockBackend{err: errMacNotFound([]byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x05}, "hw not found")},
+				IPAddr:       netip.MustParseAddr("127.0.0.1"),
+				AutoRegister: true,
+			},
+			req: &dhcpv4.DHCPv4{
+				OpCode:       dhcpv4.OpcodeBootRequest,
+				ClientHWAddr: []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x05},
+				Options: dhcpv4.OptionsFromList(
+					dhcpv4.OptMessageType(dhcpv4.MessageTypeDiscover),
+				),
+			},
+			want: &dhcpv4.DHCPv4{
+				OpCode:        dhcpv4.OpcodeBootReply,
+				ClientHWAddr:  []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x04},
+				ClientIPAddr:  []byte{0, 0, 0, 0},
+				YourIPAddr:    []byte{192, 168, 1, 100},
+				ServerIPAddr:  []byte{127, 0, 0, 1},
+				GatewayIPAddr: []byte{0, 0, 0, 0},
+				Options: dhcpv4.OptionsFromList(
+					dhcpv4.OptMessageType(dhcpv4.MessageTypeOffer),
+					dhcpv4.OptServerIdentifier(net.IP{127, 0, 0, 1}),
+					dhcpv4.OptIPAddressLeaseTime(time.Minute),
+					dhcpv4.OptSubnetMask(net.IPMask(net.IP{255, 255, 255, 0}.To4())),
+					dhcpv4.OptRouter([]net.IP{{192, 168, 1, 1}}...),
+					dhcpv4.OptDNS([]net.IP{{1, 1, 1, 1}}...),
+					dhcpv4.OptDomainName("mydomain.com"),
+					dhcpv4.OptHostName("test-host"),
+					dhcpv4.OptBroadcastAddress(net.IP{192, 168, 1, 255}),
+					dhcpv4.OptNTPServers([]net.IP{{132, 163, 96, 2}}...),
+					dhcpv4.OptDomainSearch(&rfc1035label.Labels{Labels: []string{"mydomain.com"}}),
+				),
+			},
+		},*/
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -363,80 +402,6 @@ func TestOne(t *testing.T) {
 }
 
 func TestReadBackend(t *testing.T) {
-	tests := map[string]struct {
-		input       *dhcpv4.DHCPv4
-		wantDHCP    *data.DHCP
-		wantNetboot *data.Netboot
-		wantErr     error
-	}{
-		"success": {
-			input: &dhcpv4.DHCPv4{
-				OpCode:       dhcpv4.OpcodeBootRequest,
-				ClientHWAddr: []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06},
-				Options: dhcpv4.OptionsFromList(
-					dhcpv4.OptUserClass("Tinkerbell"),
-					dhcpv4.OptClassIdentifier("HTTPClient"),
-					dhcpv4.OptClientArch(iana.EFI_ARM64_HTTP),
-					dhcpv4.OptGeneric(dhcpv4.OptionClientNetworkInterfaceIdentifier, []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06}),
-					dhcpv4.OptGeneric(dhcpv4.OptionClientMachineIdentifier, []byte{0x00, 0x02, 0x03, 0x04, 0x05, 0x06, 0x00, 0x02, 0x03, 0x04, 0x05, 0x06, 0x00, 0x02, 0x03, 0x04, 0x05}),
-					dhcpv4.OptMessageType(dhcpv4.MessageTypeDiscover),
-				),
-			},
-			wantDHCP: &data.DHCP{
-				MACAddress:       []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06},
-				IPAddress:        netip.MustParseAddr("192.168.1.100"),
-				SubnetMask:       []byte{255, 255, 255, 0},
-				DefaultGateway:   netip.MustParseAddr("192.168.1.1"),
-				NameServers:      []net.IP{{1, 1, 1, 1}},
-				Hostname:         "test-host",
-				DomainName:       "mydomain.com",
-				BroadcastAddress: netip.MustParseAddr("192.168.1.255"),
-				NTPServers:       []net.IP{{132, 163, 96, 2}},
-				LeaseTime:        60,
-				DomainSearch:     []string{"mydomain.com"},
-			},
-			wantNetboot: &data.Netboot{AllowNetboot: true, IPXEScriptURL: &url.URL{Scheme: "http", Host: "localhost:8181", Path: "auto.ipxe"}},
-			wantErr:     nil,
-		},
-		"failure": {
-			input:   &dhcpv4.DHCPv4{},
-			wantErr: errBadBackend,
-		},
-	}
-	for name, tt := range tests {
-		t.Run(name, func(t *testing.T) {
-			s := &Handler{
-				Log:    stdr.New(log.New(os.Stdout, "", log.Lshortfile)),
-				IPAddr: netip.MustParseAddr("127.0.0.1"),
-				Netboot: Netboot{
-					Enabled: true,
-				},
-				Backend: &mockBackend{
-					err:          tt.wantErr,
-					allowNetboot: true,
-					ipxeScript:   &url.URL{Scheme: "http", Host: "localhost:8181", Path: "auto.ipxe"},
-				},
-				// Listener: netip.AddrPortFrom(netip.MustParseAddr("127.0.0.1"), 67),
-			}
-			netaddrComparer := cmp.Comparer(func(x, y netip.Addr) bool {
-				i := x.Compare(y)
-				return i == 0
-			})
-			gotDHCP, gotNetboot, err := s.readBackend(context.Background(), tt.input.ClientHWAddr)
-			if !errors.Is(err, tt.wantErr) {
-				t.Fatalf("gotErr: %v, wantErr: %v", err, tt.wantErr)
-			}
-			if diff := cmp.Diff(gotDHCP, tt.wantDHCP, netaddrComparer); diff != "" {
-				t.Fatal(diff)
-			}
-			if diff := cmp.Diff(gotNetboot, tt.wantNetboot); diff != "" {
-				t.Fatal(diff)
-			}
-		})
-	}
-}
-
-func TestRegisterHwBackend(t *testing.T) {
 	tests := map[string]struct {
 		input       *dhcpv4.DHCPv4
 		wantDHCP    *data.DHCP
