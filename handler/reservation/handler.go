@@ -169,7 +169,7 @@ func (h *Handler) registerHw(ctx context.Context, mac net.HardwareAddr) error {
 			},
 		},
 	}
-	h.Log.Info("auto registering hw information {{hw}}", "hw", hwObject, "error")
+	h.Log.Info("auto registering hw information", "hw", hwObject)
 	err := h.Backend.RegisterHw(ctx, hwObject)
 	if err != nil {
 		h.Log.Info("error registering DHCP data to backend", "mac", mac, "error", err)
