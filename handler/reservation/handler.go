@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/go-logr/logr"
 	"github.com/insomniacslk/dhcp/dhcpv4"
-	"github.com/lucasepe/codename"
 	"github.com/raunovv/dhcp/backend/noop"
 	"github.com/raunovv/dhcp/data"
 	oteldhcp "github.com/raunovv/dhcp/otel"
@@ -143,7 +142,7 @@ func (h *Handler) registerHw(ctx context.Context, mac net.HardwareAddr) error {
 			APIVersion: "tinkerbell.org/v1alpha1",
 		},
 		ObjectMeta: v1.ObjectMeta{
-			Name:      GenerateHwName(),
+			Name:      "node-" + strings.Replace(mac.String(), ":", "", -1),
 			Namespace: "default",
 		},
 		Spec: v1alpha1.HardwareSpec{
@@ -187,11 +186,12 @@ func (h *Handler) registerHw(ctx context.Context, mac net.HardwareAddr) error {
 }
 
 func GenerateHwName() string {
-	rng, err := codename.DefaultRNG()
+	/*rng, err := codename.DefaultRNG()
 	if err != nil {
 		panic(err)
 	}
-	return codename.Generate(rng, 0)
+	return codename.Generate(rng, 0) */
+	return ""
 }
 
 // updateMsg handles updating DHCP packets with the data from the backend.
