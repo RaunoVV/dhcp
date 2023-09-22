@@ -101,6 +101,7 @@ func (h *Handler) Handle(conn net.PacketConn, peer net.Addr, pkt *dhcpv4.DHCPv4)
 	}
 
 	log.Info("sent DHCP response")
+	log.Info("repaly msg", reply)
 	span.SetAttributes(h.encodeToAttributes(reply, "reply")...)
 	span.SetStatus(codes.Ok, "sent DHCP response")
 }
